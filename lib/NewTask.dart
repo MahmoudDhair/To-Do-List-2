@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:to_do_list/db.helper.dart';
 import 'package:to_do_list/task_model.dart';
 
-import 'constants.dart';
+import 'task_provider.dart';
 
 class NewTask extends StatefulWidget {
   @override
@@ -20,45 +21,47 @@ class _NewTaskState extends State<NewTask> {
       appBar: AppBar(
         title: Text("New Task"),
       ),
-      body: Container(
-        padding: EdgeInsets.all(20),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            TextField(
-
-              onChanged: (value) {
-                this.task = value;
-              },
-              decoration: InputDecoration(
-                hintText: "Enter Task Name ",
-                  border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(20)),),
-            ),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      body: Consumer<TaskProvider>(
+        builder: (context, value, child) {
+          return Container(
+            padding: EdgeInsets.all(20),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Text("Is Completed"),
-                Checkbox(
-                  value: isCompleted,
+                TextField(
+
                   onChanged: (value) {
-                    this.isCompleted = value;
-                    setState(() {});
+                    this.task = value;
                   },
+                  decoration: InputDecoration(
+                    hintText: "Enter Task Name ",
+                    border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(20)),),
                 ),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text("Is Completed"),
+                    Checkbox(
+                      value: isCompleted,
+                      onChanged: (value) {
+                        this.isCompleted = value;
+                        setState(() {});
+                      },
+                    ),
+                  ],
+                ),
+                RaisedButton(
+                  onPressed: () {
+                    value.insertNewTask(Task(taskName: this.task, isCompleted: this.isCompleted));
+                    Navigator.pop(context);
+                  },
+                  child: Text('Add'),
+                )
               ],
             ),
-            RaisedButton(
-              onPressed: () {
-                DBHelper.dbHelper.insertNewTask(
-                    Task(taskName: this.task, isCompleted: this.isCompleted));
-                DBHelper.dbHelper.selectAllTask();
-                Navigator.pop(context);
-              },
-              child: Text('Add'),
-            )
-          ],
-        ),
+          );
+        },
       ),
     );
   }

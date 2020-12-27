@@ -1,11 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:to_do_list/NewTask.dart';
-import 'package:to_do_list/db.helper.dart';
 import 'package:to_do_list/task_model.dart';
 
 import 'Task_Widget.dart';
-import 'constants.dart';
+import 'task_provider.dart';
 
 class ToDoList extends StatefulWidget{
   @override
@@ -36,22 +35,17 @@ class _ToDoListState extends State<ToDoList> with SingleTickerProviderStateMixin
             Tab(text: 'Incompleted Task',),
           ],isScrollable: true, controller: tabController,),
         ),
-        body:
-    Provider(
-    create:(_) => FavouritesProvider() ,
-    child:
-        Column(
-              children: [
-                Expanded(
-                  child: TabBarView(children:[
-                    AllTask(),
-                    CompletedTask(),
-                    InCompletedTask(),
-                  ], controller: tabController,),
-                ),
-              ],
+        body: Column(
+          children: [
+            Expanded(
+              child: TabBarView(children:[
+                AllTask(),
+                CompletedTask(),
+                InCompletedTask(),
+              ], controller: tabController,),
             ),
-    )
+          ],
+        )
           ),
     );
 
@@ -67,33 +61,16 @@ class AllTask extends StatefulWidget{
 class _AllTaskState extends State<AllTask> {
   @override
   Widget build(BuildContext context) {
-    return FutureBuilder(
-            future: Provider.of<FavouritesProvider>(context).fetchAndSetFav(),
-            builder: (context, snapshot) {
-              if (snapshot.connectionState == ConnectionState.done) {
-              if (snapshot.hasData) {
-                setChange(){
-                  setState(() {
-
-                  });
-                }
-                print(snapshot.data);
-                return ListView.builder(
-                  itemCount: snapshot.data.length,
-                  itemBuilder: (context, index) {
-                    return TaskWidget(snapshot.data[index],setChange);
-                  },
-                );
-              } else {
-                return Center(
-                  child: Text("No Data"),
-                );
-              }
-            }else {
-                return Center(child: CircularProgressIndicator(),);
-              }
-            },
-          );
+    return Consumer<TaskProvider>(
+      builder: (context, value, child) {
+        return ListView.builder(
+          itemCount: value.tasks.length,
+          itemBuilder: (context, index) {
+            return TaskWidget(value.tasks[index]);
+          },
+        );
+      },
+    );
 
   }
 }
@@ -109,40 +86,19 @@ class _CompletedTaskState extends State<CompletedTask> {
 
   @override
   Widget build(BuildContext context) {
-    return FutureBuilder(
-      future: Provider.of<FavouritesProvider>(context).fetchAndSetFav(),
-      builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.done) {
-          if (snapshot.hasData) {
-            setChange(){
-              setState(() {
+    return Consumer<TaskProvider>(
+      builder: (context, value, child) {
+        List<Task> t = value.tasks.where((element) => element.isCompleted == true).toList();
+        return ListView.builder(
+          itemCount: t.length,
+          itemBuilder: (context, index) {
 
-              });
-            }
-            print(snapshot.data);
-             List<Task> t = snapshot.data.where((element) => element.isCompleted == true).toList();
-            return ListView.builder(
-              itemCount: t.length,
-              itemBuilder: (context, index) {
-
-                return TaskWidget(t[index],setChange);
-              },
-            );
-          } else {
-            return Center(
-              child: Text("No Data"),
-            );
-          }
-        }else {
-          return Center(child: CircularProgressIndicator(),);
-        }
+            return TaskWidget(t[index]);
+          },
+        );
       },
     );
-    // return Container(
-    //   child: Column(
-    //       children: tasksLast.where((element) => element.isCompleted == true).map((e) => TaskWidget(e,myfun)).toList()
-    //   ),
-    // );
+
   }
 }
 
@@ -156,33 +112,16 @@ class _InCompletedTaskState extends State<InCompletedTask> {
 
   @override
   Widget build(BuildContext context) {
-    return FutureBuilder(
-      future: Provider.of<FavouritesProvider>(context).fetchAndSetFav(),
-      builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.done) {
-          if (snapshot.hasData) {
-            setChange(){
-              setState(() {
+    return Consumer<TaskProvider>(
+      builder: (context, value, child) {
+         List<Task> t = value.tasks.where((element) => element.isCompleted == false).toList();
+        return ListView.builder(
+          itemCount: t.length,
+          itemBuilder: (context, index) {
 
-              });
-            }
-            print(snapshot.data);
-            List<Task> t = snapshot.data.where((element) => element.isCompleted == false).toList();
-            return ListView.builder(
-              itemCount: t.length,
-              itemBuilder: (context, index) {
-
-                return TaskWidget(t[index],setChange);
-              },
-            );
-          } else {
-            return Center(
-              child: Text("No Data"),
-            );
-          }
-        }else {
-          return Center(child: CircularProgressIndicator(),);
-        }
+            return TaskWidget(t[index]);
+          },
+        );
       },
     );
   }
